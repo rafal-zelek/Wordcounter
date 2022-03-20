@@ -11,9 +11,12 @@ trait BlackBoxSource[F[_]] {
 }
 
 
-class DummyGeneratorBlackBoxSource(implicit log: LogWriter[IO]) extends BlackBoxSource[IO] {
+class DummyGeneratorBlackBoxSource(log: LogWriter[IO]) extends BlackBoxSource[IO] {
   private val TICK_DURATION: FiniteDuration = 500.milliseconds
 
+  /**
+    * event_kjkszpj is not parsable by circe by purpose to show different kind of errors
+    */
   private val evenTypeStream: Stream[Pure, String] = Stream("event_one", "event_two", "event_kjkszpj").repeat
   private val dataStream: Stream[Pure, String] = Stream("The", "macOS", "blackbox", "generator", "doesn't", "work").repeat
   private val timestamp: Stream[IO, FiniteDuration] = Stream.eval(IO.realTime)
