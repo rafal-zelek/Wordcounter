@@ -2,6 +2,9 @@ package zelek.rafal.tech.task
 
 import cats.effect.{ExitCode, IO, IOApp}
 import log.effect.fs2.SyncLogWriter
+import zelek.rafal.tech.task.blackbox.source.DummyGeneratorBlackBoxSource
+import zelek.rafal.tech.task.http.WordCounterServer
+import zelek.rafal.tech.task.wordcounter.{InMemoryWordCounterRepository, WordCounterProgram}
 
 object Main extends IOApp {
   def run(args: List[String]): IO[ExitCode] = {

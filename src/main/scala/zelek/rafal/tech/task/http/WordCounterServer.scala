@@ -1,4 +1,4 @@
-package zelek.rafal.tech.task
+package zelek.rafal.tech.task.http
 
 import cats.effect.{Async, Resource}
 import cats.syntax.all._
@@ -8,6 +8,7 @@ import org.http4s.ember.client.EmberClientBuilder
 import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
+import zelek.rafal.tech.task.wordcounter.WordCounterRepository
 
 class WordCounterServer[F[_] : Async](wordCounterRepository: WordCounterRepository[F]) {
 

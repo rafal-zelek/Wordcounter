@@ -1,17 +1,12 @@
-package zelek.rafal.tech.task
+package zelek.rafal.tech.task.wordcounter
 
 import cats.effect.IO
 import cats.effect.kernel.Ref
 import fs2.timeseries.TimeStamped
+import zelek.rafal.tech.task.blackbox.domain.{EventType, NumberOfWords}
 
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.FiniteDuration
-
-trait WordCounterRepository[F[_]] {
-  def save(value: TimeStamped[Map[EventType, NumberOfWords]]): F[Unit]
-
-  def currentNumberOfWords: F[TimeStamped[Map[EventType, NumberOfWords]]]
-}
 
 class InMemoryWordCounterRepository(ref: Ref[IO, TimeStamped[Map[EventType, NumberOfWords]]]) extends WordCounterRepository[IO] {
   override def save(value: TimeStamped[Map[EventType, NumberOfWords]]): IO[Unit] = ref.set(value)

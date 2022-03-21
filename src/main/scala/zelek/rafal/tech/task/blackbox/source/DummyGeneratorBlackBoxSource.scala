@@ -1,14 +1,10 @@
-package zelek.rafal.tech.task
+package zelek.rafal.tech.task.blackbox.source
 
 import cats.effect.IO
 import fs2.{Pure, Stream}
 import log.effect.LogWriter
 
 import scala.concurrent.duration._
-
-trait BlackBoxSource[F[_]] {
-  val source: Stream[F, String]
-}
 
 
 class DummyGeneratorBlackBoxSource(log: LogWriter[IO]) extends BlackBoxSource[IO] {

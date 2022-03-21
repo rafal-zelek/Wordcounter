@@ -1,12 +1,15 @@
-package zelek.rafal.tech.task
+package zelek.rafal.tech.task.wordcounter
 
-import scala.concurrent.duration._
 import cats.Functor
 import cats.implicits._
 import fs2.timeseries.TimeStamped
 import fs2.{Pipe, Stream}
 import io.circe.parser.decode
 import log.effect.LogWriter
+import zelek.rafal.tech.task.blackbox.domain.{BlackBoxEvent, EventType, NumberOfWords}
+import zelek.rafal.tech.task.blackbox.source.BlackBoxSource
+
+import scala.concurrent.duration._
 
 class WordCounterProgram[F[_] : Functor](blackBoxSource: BlackBoxSource[F],
                                          log: LogWriter[F],
