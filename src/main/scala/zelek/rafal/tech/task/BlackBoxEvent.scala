@@ -1,5 +1,6 @@
 package zelek.rafal.tech.task
 
+import cats.Monoid
 import enumeratum._
 
 import java.util.concurrent.TimeUnit
@@ -15,9 +16,23 @@ case object EventType extends Enum[EventType] with CirceEnum[EventType] {
   val values: IndexedSeq[EventType] = findValues
 }
 
+final case class NumberOfWords(numberOfWords: Int) extends AnyVal
+
+object NumberOfWords {
+  implicit val monoid: Monoid[NumberOfWords] = new Monoid[NumberOfWords] {
+    override def empty: NumberOfWords = NumberOfWords(0)
+
+    override def combine(x: NumberOfWords, y: NumberOfWords): NumberOfWords = NumberOfWords(x.numberOfWords + y.numberOfWords)
+  }
+}
+
 final case class BlackBoxData(data: String) extends AnyVal
 
-final case class BlackBoxEvent(eventType: EventType, data: BlackBoxData, timestamp: FiniteDuration)
+final case class BlackBoxEvent(eventType: EventType, data: BlackBoxData, timestamp: FiniteDuration) {
+  private val WORD_SEPARATOR = " "
+
+  def numberOfWords: NumberOfWords = NumberOfWords(data.data.split(WORD_SEPARATOR).length)
+}
 
 
 object BlackBoxEvent {

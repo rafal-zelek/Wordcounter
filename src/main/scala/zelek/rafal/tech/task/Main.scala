@@ -6,7 +6,8 @@ import log.effect.fs2.SyncLogWriter
 object Main extends IOApp {
   def run(args: List[String]): IO[ExitCode] = {
     val source = new DummyGeneratorBlackBoxSource(SyncLogWriter.consoleLog[IO])
-    val program = new BlackBoxWordCountProgram(source, SyncLogWriter.consoleLog[IO]).program
-    program.compile.drain.as(ExitCode.Success)
+    val program: BlackBoxWordCountProgram[IO] = new BlackBoxWordCountProgram(source, SyncLogWriter.consoleLog[IO])
+    val stream: fs2.Stream[IO, Nothing] = new WordCounterServer[IO](program).stream
+    stream.compile.drain.as(ExitCode.Success)
   }
 }

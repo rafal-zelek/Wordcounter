@@ -12,13 +12,13 @@ trait BlackBoxSource[F[_]] {
 
 
 class DummyGeneratorBlackBoxSource(log: LogWriter[IO]) extends BlackBoxSource[IO] {
-  private val TICK_DURATION: FiniteDuration = 500.milliseconds
+  private val TICK_DURATION: FiniteDuration = 50.milliseconds
 
   /**
     * event_kjkszpj is not parsable by circe by purpose to show different kind of errors
     */
   private val evenTypeStream: Stream[Pure, String] = Stream("event_one", "event_two", "event_kjkszpj").repeat
-  private val dataStream: Stream[Pure, String] = Stream("The", "macOS", "blackbox", "generator", "doesn't", "work").repeat
+  private val dataStream: Stream[Pure, String] = Stream("The macOS blackbox", "generator", "doesn't work,", "but it does not", "stop me.").repeat
   private val timestamp: Stream[IO, FiniteDuration] = Stream.eval(IO.realTime)
   private val ticksStream: Stream[IO, FiniteDuration] = Stream.awakeEvery[IO](TICK_DURATION)
 

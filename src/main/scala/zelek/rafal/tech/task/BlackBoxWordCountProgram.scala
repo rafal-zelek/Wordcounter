@@ -2,15 +2,15 @@ package zelek.rafal.tech.task
 
 import cats.Functor
 import cats.implicits._
+import fs2.timeseries.TimeStamped
 import fs2.{Pipe, Stream}
 import io.circe.parser.decode
 import log.effect.LogWriter
 
 class BlackBoxWordCountProgram[F[_] : Functor](blackBoxSource: BlackBoxSource[F],
                                                log: LogWriter[F]) {
-  private val decodeBlackBoxEvent: String => Either[io.circe.Error, BlackBoxEvent] = decode[BlackBoxEvent]
 
-  private val parseBlackBoxEvent: Pipe[F, String, BlackBoxEvent] = _.map(decodeBlackBoxEvent)
+  private val parseBlackBoxEvent: Pipe[F, String, BlackBoxEvent] = _.map(decode[BlackBoxEvent])
     .flatMap {
       case Right(blackBoxEvent) => Stream(blackBoxEvent)
       case Left(error) =>
@@ -18,6 +18,20 @@ class BlackBoxWordCountProgram[F[_] : Functor](blackBoxSource: BlackBoxSource[F]
           Stream.empty
     }.evalTap(blackBoxEvent => log.debug(s"Successfully parsed ${blackBoxEvent}"))
 
-  val program: Stream[F, BlackBoxEvent] = blackBoxSource.source
+  private val numberOfWordsTimedAggregator = TimeStamped.withPerSecondRate[BlackBoxEvent, Map[EventType, NumberOfWords]](
+    event => Map(event.eventType -> event.numberOfWords)
+  )
+
+  private val collectAggregatedWords: Pipe[F, TimeStamped[Either[Map[EventType, NumberOfWords], BlackBoxEvent]], TimeStamped[Map[EventType, NumberOfWords]]] = _.flatMap {
+    case TimeStamped(_, Right(_)) => Stream.empty
+    case TimeStamped(timestamp, Left(value)) => Stream(TimeStamped(timestamp, value))
+  }
+
+  val program: Stream[F, TimeStamped[Map[EventType, NumberOfWords]]] = blackBoxSource.source
     .through(parseBlackBoxEvent)
+    .map(event => TimeStamped(event.timestamp, event))
+    .through(numberOfWordsTimedAggregator.toPipe)
+    .through(collectAggregatedWords)
+    .evalTap(result => log.info(s"Result: $result"))
+
 }
