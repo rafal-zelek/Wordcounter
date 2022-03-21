@@ -6,16 +6,14 @@ import fs2.timeseries.TimeStamped
 import fs2.{Pipe, Stream}
 import io.circe.parser.decode
 import log.effect.LogWriter
+import zelek.rafal.tech.task.TimedAggregatorRate
 import zelek.rafal.tech.task.blackbox.domain.{BlackBoxEvent, EventType, NumberOfWords}
 import zelek.rafal.tech.task.blackbox.source.BlackBoxSource
 
-import scala.concurrent.duration._
-
 class WordCounterProgram[F[_] : Functor](blackBoxSource: BlackBoxSource[F],
                                          log: LogWriter[F],
-                                         wordCounterRepository: WordCounterRepository[F]) {
-  private val TIMED_AGGREGATOR_RATE: FiniteDuration = 20.seconds
-
+                                         wordCounterRepository: WordCounterRepository[F],
+                                         timedAggregatorRate: TimedAggregatorRate) {
   private val parseBlackBoxEvent: Pipe[F, String, BlackBoxEvent] = _.map(decode[BlackBoxEvent])
     .flatMap {
       case Right(blackBoxEvent) => Stream(blackBoxEvent)
@@ -24,7 +22,7 @@ class WordCounterProgram[F[_] : Functor](blackBoxSource: BlackBoxSource[F],
           Stream.empty
     }.evalTap(blackBoxEvent => log.debug(s"Successfully parsed ${blackBoxEvent}"))
 
-  private val numberOfWordsTimedAggregator = TimeStamped.withRate[BlackBoxEvent, Map[EventType, NumberOfWords]](TIMED_AGGREGATOR_RATE)(
+  private val numberOfWordsTimedAggregator = TimeStamped.withRate[BlackBoxEvent, Map[EventType, NumberOfWords]](timedAggregatorRate.rate)(
     event => Map(event.eventType -> event.numberOfWords)
   )
 
