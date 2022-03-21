@@ -9,12 +9,12 @@ import org.http4s.ember.server.EmberServerBuilder
 import org.http4s.implicits._
 import org.http4s.server.middleware.Logger
 
-class WordCounterServer[F[_] : Async](blackBoxWordCountProgram: BlackBoxWordCountProgram[F]) {
+class WordCounterServer[F[_] : Async](wordCounterRepository: WordCounterRepository[F]) {
 
   def stream: Stream[F, Nothing] = {
     for {
       _ <- Stream.resource(EmberClientBuilder.default[F].build)
-      httpApp = WordCounterRoutes.wordCounterRoutes[F](blackBoxWordCountProgram.program).orNotFound
+      httpApp = WordCounterRoutes.wordCounterRoutes[F](wordCounterRepository).orNotFound
 
       finalHttpApp = Logger.httpApp(logHeaders = true, logBody = true)(httpApp)
 
