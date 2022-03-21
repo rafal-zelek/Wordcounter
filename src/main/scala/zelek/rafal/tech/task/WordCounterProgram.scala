@@ -11,7 +11,7 @@ import log.effect.LogWriter
 class WordCounterProgram[F[_] : Functor](blackBoxSource: BlackBoxSource[F],
                                          log: LogWriter[F],
                                          wordCounterRepository: WordCounterRepository[F]) {
-  private val TIMED_AGGREGATOR_RATE: FiniteDuration = 1.minute
+  private val TIMED_AGGREGATOR_RATE: FiniteDuration = 20.seconds
 
   private val parseBlackBoxEvent: Pipe[F, String, BlackBoxEvent] = _.map(decode[BlackBoxEvent])
     .flatMap {
