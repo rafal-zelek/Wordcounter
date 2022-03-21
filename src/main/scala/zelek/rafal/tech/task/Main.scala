@@ -9,10 +9,10 @@ import zelek.rafal.tech.task.wordcounter.{InMemoryWordCounterRepository, WordCou
 object Main extends IOApp {
   def run(args: List[String]): IO[ExitCode] = {
     InMemoryWordCounterRepository().flatMap(wordCounterRepository => {
-      val source = new DummyGeneratorBlackBoxSource(SyncLogWriter.consoleLog[IO])
-      val program: WordCounterProgram[IO] = new WordCounterProgram(source, SyncLogWriter.consoleLog[IO], wordCounterRepository)
-      val stream: fs2.Stream[IO, Nothing] = new WordCounterServer[IO](wordCounterRepository).stream
-      program.program.merge(stream).compile.drain.as(ExitCode.Success)
+      val blackBoxSource = new DummyGeneratorBlackBoxSource(SyncLogWriter.consoleLog[IO])
+      val wordCounterProgram = new WordCounterProgram(blackBoxSource, SyncLogWriter.consoleLog[IO], wordCounterRepository).program
+      val wordCounterServer = new WordCounterServer[IO](wordCounterRepository).stream
+      (wordCounterProgram merge wordCounterServer).compile.drain.as(ExitCode.Success)
     })
   }
 }
